@@ -57,6 +57,7 @@ h1,h2{font-family:"Unbounded",system-ui,sans-serif;margin:0;letter-spacing:-.02e
 .fl{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
 .fl select,.fl input[type=search]{min-height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--ink);background:#fff}
 .fl input[type=search]{flex:1;min-width:180px}
+.slot{aspect-ratio:4/5;border:2px dashed var(--line);border-radius:12px;background:none;color:var(--mute);font:inherit;font-weight:600;cursor:pointer}.slot:hover{border-color:var(--ink);color:var(--ink)}
 .empty{padding:28px;text-align:center;color:var(--mute);border:2px dashed var(--line);border-radius:12px}
 .more{margin-top:14px;text-align:center}
 dialog{border:2px solid var(--ink);border-radius:18px;padding:22px;max-width:520px;width:calc(100% - 32px)}
@@ -161,11 +162,11 @@ label{font-weight:700}
   const dur = it => it.dur ? Math.floor(it.dur / 60) + ':' + String(Math.round(it.dur % 60)).padStart(2, '0') : '';
   const meta = it => [it.client, TY[it.type], GN[it.genre], dur(it), it.w + '×' + it.h].filter(Boolean).join(' · ');
   const SEC = [
-    { k: 'reel', t: 'Video kể chuyện', h: 'Hàng video drama và sing. Nên chọn 6 video (một hàng trên máy tính), tối đa 12.', ok: i => i.type === 'vid', min: 3, max: 12 },
-    { k: 'ads', t: 'Video sản phẩm', h: 'Hàng video quảng cáo sản phẩm. Nên chọn 6 video, tối đa 12.', ok: i => i.type === 'vid', min: 3, max: 12 },
-    { k: 'social', t: 'Social post Co.opmart', h: 'Nên chọn 8 bài (2 hàng). Ô hiển thị theo tỉ lệ 4:5, bài vuông hoặc ngang sẽ bị cắt bớt hai bên.', ok: i => i.brand === 'coopmart' && i.type === 'img', min: 4, max: 12 },
-    { k: 'social_oly', t: 'Social post Olympia', h: 'Nên chọn 8 bài (2 hàng). Ô hiển thị theo tỉ lệ 4:5.', ok: i => i.brand === 'olympia' && i.type === 'img', min: 4, max: 12 },
-    { k: 'gifs', t: 'GIF & motion', h: 'Nên chọn 8 GIF (2 hàng), tối đa 12.', ok: i => i.type === 'gif', min: 4, max: 12 },
+    { k: 'reel', t: 'Video kể chuyện', h: 'Hàng video drama và sing. Trang chính xếp 6 video một hàng: chọn 6, 12 hoặc 18 để các hàng đầy.', ok: i => i.type === 'vid', min: 3, max: 18, row: 6 },
+    { k: 'ads', t: 'Video sản phẩm', h: 'Hàng video quảng cáo sản phẩm. Trang chính xếp 6 video một hàng: chọn 6, 12 hoặc 18 để các hàng đầy.', ok: i => i.type === 'vid', min: 3, max: 18, row: 6 },
+    { k: 'social', t: 'Social post Co.opmart', h: 'Trang chính xếp 4 bài một hàng: chọn 8, 12 hoặc 16 để các hàng đầy. Ô hiển thị theo tỉ lệ 4:5, bài vuông hoặc ngang sẽ bị cắt bớt hai bên.', ok: i => i.brand === 'coopmart' && i.type === 'img', min: 4, max: 16, row: 4 },
+    { k: 'social_oly', t: 'Social post Olympia', h: 'Trang chính xếp 4 bài một hàng: chọn 8, 12 hoặc 16 để các hàng đầy. Ô hiển thị theo tỉ lệ 4:5.', ok: i => i.brand === 'olympia' && i.type === 'img', min: 4, max: 16, row: 4 },
+    { k: 'gifs', t: 'GIF & motion', h: 'Trang chính xếp 4 GIF một hàng: chọn 8, 12 hoặc 16 để các hàng đầy.', ok: i => i.type === 'gif', min: 4, max: 16, row: 4 },
     { k: 'wall', t: 'Static ads', h: 'Kho ảnh xoay vòng ngẫu nhiên của mục Static ads. Càng nhiều ảnh càng đa dạng, tối thiểu 30.', ok: i => i.type === 'img', min: 30, max: 300 },
     { k: 'm_orangify', t: 'Thẻ brand Orangify', h: '3 ảnh trên thẻ Orangify Digital và ở dòng Kinh nghiệm. Cần đúng 3.', ok: i => i.brand === 'orangify' && i.type !== 'lp', min: 3, max: 3 },
     { k: 'm_coopmart', t: 'Thẻ brand Co.opmart', h: '3 ảnh trên thẻ Co.opmart và ở dòng Kinh nghiệm. Cần đúng 3.', ok: i => i.brand === 'coopmart', min: 3, max: 3 },
@@ -260,7 +261,8 @@ label{font-weight:700}
   }
   function drawSel() {
     const L = cur[sec.k], el = $('#sel');
-    $('#h-sel').textContent = sec.t + ' (' + L.length + ')';
+    const free = sec.row ? Math.min(sec.max, Math.max(sec.row, Math.ceil(L.length / sec.row) * sec.row)) - L.length : 0;
+    $('#h-sel').textContent = sec.t + ' (' + L.length + '/' + sec.max + ')' + (free ? ' · còn ' + free + ' ô trống để đầy hàng' : '');
     $('#hint').textContent = sec.h + ' Kéo thả hoặc dùng nút mũi tên để đổi thứ tự.';
     el.textContent = '';
     if (!L.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = 'Chưa có sản phẩm nào. Chọn từ thư viện bên dưới.'; el.appendChild(e); el.style.display = 'block'; return; }
@@ -282,6 +284,7 @@ label{font-weight:700}
       w.addEventListener('drop', e => { e.preventDefault(); w.classList.remove('over'); const a = L.indexOf(dragId); if (a > -1) move(a, i); });
       el.appendChild(w);
     });
+    for (let i = 0; i < free; i++) { const b = document.createElement('button'); b.type = 'button'; b.className = 'slot'; b.textContent = '+ Ô trống'; b.setAttribute('aria-label', 'Ô trống, chọn sản phẩm từ thư viện'); b.onclick = () => $('#lib').scrollIntoView({ behavior: 'smooth', block: 'start' }); el.appendChild(b); }
   }
   function pool() {
     const q = $('#f-q').value.trim().toLowerCase(), c = $('#f-client').value;
