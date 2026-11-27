@@ -70,6 +70,18 @@ label{font-weight:700}
 .err{color:var(--bad);font-weight:600;min-height:22px}
 @media(max-width:860px){.wrap{grid-template-columns:1fr;padding:14px}.side{position:static;display:flex;gap:6px;overflow-x:auto}.side button{width:auto;white-space:nowrap;flex:none}.top h1{width:100%}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+.w{position:relative}
+.pv{position:absolute;right:6px;bottom:6px;z-index:3;min-width:36px;height:36px;padding:0 10px;border-radius:999px;border:2px solid var(--ink);background:#fff;font-weight:700;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.pv:hover{background:var(--orange)}
+.it video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.it .cap{padding-right:52px}
+.it .du{position:absolute;right:6px;top:6px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;background:var(--ink);color:#fff}
+.lib .it.on .du{right:36px}
+#pv{max-width:min(920px,calc(100% - 24px));width:auto;padding:18px}
+#pv .stage{display:grid;place-items:center;background:var(--ink);border-radius:12px;overflow:hidden;margin:12px 0}
+#pv .stage video,#pv .stage img{max-width:100%;max-height:62vh;display:block}
+#pv .meta{color:var(--mute);font-weight:600;word-break:break-word}
+#pv h2{font-size:18px;word-break:break-word}
 </style>
 </head>
 <body>
@@ -92,10 +104,10 @@ label{font-weight:700}
     </section>
     <section class="card" aria-labelledby="h-lib">
       <h2 id="h-lib">Thư viện sản phẩm</h2>
-      <p class="hint">Bấm vào một sản phẩm để thêm vào mục đang chọn. Bấm lần nữa để gỡ.</p>
+      <p class="hint">Bấm vào một sản phẩm để thêm vào mục đang chọn, bấm lần nữa để gỡ. Rê chuột lên video để xem thử 5 giây, bấm nút Xem để mở video đầy đủ có tiếng.</p>
       <div class="fl">
         <select id="f-client" aria-label="Lọc theo khách hàng"></select>
-        <input id="f-q" type="search" placeholder="Tìm theo tên khách hàng hoặc tiêu đề" aria-label="Tìm sản phẩm">
+        <input id="f-q" type="search" placeholder="Tìm theo tên file, khách hàng hoặc thể loại (drama, sing, ugc…)" aria-label="Tìm sản phẩm">
         <span class="st" id="f-n"></span>
       </div>
       <div class="lib" id="lib"></div>
@@ -124,7 +136,14 @@ label{font-weight:700}
   </div>
 </dialog>
 
+<dialog id="pv" aria-labelledby="pv-h">
+  <h2 id="pv-h"></h2>
+  <p class="meta" id="pv-m"></p>
+  <div class="stage" id="pv-s"></div>
+  <div class="row"><button class="btn" id="pv-x" type="button">Đóng</button><button class="btn b" id="pv-t" type="button"></button></div>
+</dialog>
 <script src="data/items.js"></script>
+<script src="data/names.js"></script>
 <script>document.write('<script src="data/featured.js?t='+Date.now()+'"><\/script>')</script>
 <script>
 (function () {
@@ -134,6 +153,13 @@ label{font-weight:700}
   const byId = {}; D.items.forEach(i => byId[i.id] = i);
   const M = it => 'm/' + it.id;
   const TY = { vid: 'Video', gif: 'GIF', img: 'Ảnh', lp: 'Landing' };
+  const GN = { drama: 'Drama', ugc: 'UGC', cartoon: 'Cartoon', footage: 'Footage', sing: 'Sing', promo: 'Motion promo' };
+  const NM = window.PF_NAMES || {};
+  const HOVER = matchMedia('(hover: hover)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isV = it => it.type === 'vid' || it.type === 'gif';
+  const name = it => it.title || NM[it.id] || it.client;
+  const dur = it => it.dur ? Math.floor(it.dur / 60) + ':' + String(Math.round(it.dur % 60)).padStart(2, '0') : '';
+  const meta = it => [it.client, TY[it.type], GN[it.genre], dur(it), it.w + '×' + it.h].filter(Boolean).join(' · ');
   const SEC = [
     { k: 'reel', t: 'Video kể chuyện', h: 'Hàng video drama và sing. Nên chọn 6 video (một hàng trên máy tính), tối đa 12.', ok: i => i.type === 'vid', min: 3, max: 12 },
     { k: 'ads', t: 'Video sản phẩm', h: 'Hàng video quảng cáo sản phẩm. Nên chọn 6 video, tối đa 12.', ok: i => i.type === 'vid', min: 3, max: 12 },
@@ -164,7 +190,7 @@ label{font-weight:700}
     else if (d) status('Có thay đổi chưa lưu.', 'warn');
     else status('Mọi thứ đã được lưu.', 'ok');
   }
-  function label(it) { return (it.title || it.client) + ' · ' + TY[it.type]; }
+  function label(it) { return name(it) + ' · ' + it.client + ' · ' + TY[it.type]; }
   function thumb(it, cap) {
     const b = document.createElement('button');
     b.type = 'button'; b.className = 'it';
@@ -172,7 +198,45 @@ label{font-weight:700}
     const ty = document.createElement('span'); ty.className = 'ty'; ty.textContent = TY[it.type];
     const c = document.createElement('span'); c.className = 'cap'; c.textContent = cap || it.client;
     b.append(im, ty, c);
+    b.title = name(it) + ' (' + meta(it) + ')';
+    if (isV(it)) {
+      if (it.dur) { const du = document.createElement('span'); du.className = 'du'; du.textContent = dur(it); b.appendChild(du); }
+      if (HOVER) {
+        let v;
+        b.addEventListener('mouseenter', () => { if (v) return; v = document.createElement('video'); v.muted = true; v.loop = true; v.playsInline = true; v.src = M(it) + '_p.mp4'; b.insertBefore(v, ty); v.play().catch(() => {}); });
+        b.addEventListener('mouseleave', () => { if (v) { v.remove(); v = null; } });
+      }
+    }
     return b;
+  }
+  const pv = $('#pv');
+  let pvIt = null;
+  function pvBtn() { const on = cur[sec.k].includes(pvIt.id); $('#pv-t').textContent = on ? 'Gỡ khỏi "' + sec.t + '"' : 'Thêm vào "' + sec.t + '"'; $('#pv-t').hidden = !sec.ok(pvIt); }
+  function preview(it) {
+    pvIt = it;
+    $('#pv-h').textContent = name(it);
+    $('#pv-m').textContent = meta(it);
+    const st = $('#pv-s'); st.textContent = '';
+    if (isV(it)) { const v = document.createElement('video'); v.controls = true; v.autoplay = true; v.playsInline = true; v.loop = it.type === 'gif'; v.muted = it.type === 'gif'; v.poster = M(it) + '_t.webp'; v.src = M(it) + '.mp4'; st.appendChild(v); }
+    else { const im = new Image(); im.alt = name(it); im.src = M(it) + '.webp'; st.appendChild(im); }
+    pvBtn(); pv.showModal();
+  }
+  pv.addEventListener('close', () => { $('#pv-s').textContent = ''; pvIt = null; });
+  $('#pv-x').onclick = () => pv.close();
+  $('#pv-t').onclick = () => { toggle(pvIt); if (pvIt) pvBtn(); };
+  function toggle(it) {
+    const L = cur[sec.k], k = L.indexOf(it.id);
+    if (k > -1) L.splice(k, 1);
+    else { if (L.length >= sec.max) { status('Mục "' + sec.t + '" chỉ chứa tối đa ' + sec.max + ' sản phẩm. Gỡ bớt trước khi thêm.', 'bad'); return; } L.push(it.id); }
+    drawAll();
+  }
+  function withPv(b, it) {
+    const w = document.createElement('div'); w.className = 'w';
+    const p = document.createElement('button'); p.type = 'button'; p.className = 'pv';
+    p.textContent = isV(it) ? '▶ Xem' : 'Xem';
+    p.setAttribute('aria-label', 'Xem trước: ' + label(it));
+    p.onclick = e => { e.stopPropagation(); preview(it); };
+    w.append(b, p); return w;
   }
   function drawSide() {
     const el = $('#side'); el.textContent = '';
@@ -205,12 +269,12 @@ label{font-weight:700}
       const it = byId[id], w = document.createElement('div');
       w.className = 's'; w.draggable = true;
       const no = document.createElement('span'); no.className = 'no'; no.textContent = i + 1;
-      const t = thumb(it); t.tabIndex = -1; t.setAttribute('aria-hidden', 'true');
-      t.querySelector('.ty').remove();
+      const t = thumb(it, name(it)); t.tabIndex = -1; t.setAttribute('aria-hidden', 'true');
+      t.querySelector('.ty').remove(); t.ondblclick = () => preview(it);
       const ctl = document.createElement('div'); ctl.className = 'ctl';
       const mk = (txt, lab, fn, dis, cls) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = txt; b.setAttribute('aria-label', lab + ': ' + label(it)); b.disabled = !!dis; if (cls) b.className = cls; b.onclick = fn; return b; };
       ctl.append(mk('←', 'Chuyển lên trước', () => move(i, i - 1), i === 0), mk('→', 'Chuyển ra sau', () => move(i, i + 1), i === L.length - 1), mk('✕', 'Gỡ khỏi mục', () => { L.splice(i, 1); drawAll(); }, false, 'x'));
-      w.append(no, t, ctl);
+      const tw = withPv(t, it); w.append(no, tw, ctl);
       w.addEventListener('dragstart', e => { dragId = id; w.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', id); } catch (x) {} });
       w.addEventListener('dragend', () => { dragId = null; w.classList.remove('drag'); });
       w.addEventListener('dragover', e => { if (dragId && dragId !== id) { e.preventDefault(); w.classList.add('over'); } });
@@ -221,7 +285,7 @@ label{font-weight:700}
   }
   function pool() {
     const q = $('#f-q').value.trim().toLowerCase(), c = $('#f-client').value;
-    return D.items.filter(i => sec.ok(i) && (!c || i.client === c) && (!q || (i.client + ' ' + (i.title || '')).toLowerCase().includes(q)));
+    return D.items.filter(i => sec.ok(i) && (!c || i.client === c) && (!q || (i.client + ' ' + (i.title || '') + ' ' + (NM[i.id] || '') + ' ' + (GN[i.genre] || '')).toLowerCase().includes(q)));
   }
   function drawClients() {
     const el = $('#f-client'), keep = el.value;
@@ -237,17 +301,12 @@ label{font-weight:700}
     el.textContent = '';
     $('#f-n').textContent = P.length + ' sản phẩm phù hợp với mục này';
     P.slice(0, shown).forEach(it => {
-      const b = thumb(it, it.title || it.client), on = L.includes(it.id);
+      const b = thumb(it, name(it)), on = L.includes(it.id);
       if (on) b.classList.add('on');
       b.setAttribute('aria-pressed', on);
       b.setAttribute('aria-label', (on ? 'Gỡ: ' : 'Thêm: ') + label(it));
-      b.onclick = () => {
-        const k = L.indexOf(it.id);
-        if (k > -1) L.splice(k, 1);
-        else { if (L.length >= sec.max) { status('Mục "' + sec.t + '" chỉ chứa tối đa ' + sec.max + ' sản phẩm. Gỡ bớt trước khi thêm.', 'bad'); return; } L.push(it.id); }
-        drawAll();
-      };
-      el.appendChild(b);
+      b.onclick = () => toggle(it);
+      el.appendChild(withPv(b, it));
     });
     if (!P.length) { const e = document.createElement('div'); e.className = 'empty'; e.style.gridColumn = '1/-1'; e.textContent = 'Không tìm thấy sản phẩm nào.'; el.appendChild(e); }
     $('#b-more').hidden = P.length <= shown;
