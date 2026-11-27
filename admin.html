@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Dashboard – Thành Đạt</title>
+<link rel="icon" href="assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Unbounded:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{--blue:#1F4BFF;--orange:#FF6A13;--ink:#0E1330;--mute:#4A5170;--line:#D9E0F5;--soft:#F3F6FF;--ok:#0B7A43;--bad:#B3261E}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:400 15px/1.5 "Be Vietnam Pro",system-ui,sans-serif;color:var(--ink);background:var(--soft)}
+button,input,select{font:inherit;color:inherit}
+h1,h2{font-family:"Unbounded",system-ui,sans-serif;margin:0;letter-spacing:-.02em}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line)}
+.top .in{max-width:1400px;margin:0 auto;padding:12px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.top h1{font-size:18px;font-weight:800;margin-right:auto}.top h1 em{font-style:normal;color:var(--blue)}
+.btn{min-height:44px;padding:0 18px;border-radius:999px;border:2px solid var(--ink);background:#fff;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;text-decoration:none;transition:transform .15s,box-shadow .15s}
+.btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:3px 3px 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.p{background:var(--orange)}.btn.b{background:var(--blue);color:#fff}
+.st{font-weight:600;font-size:14px;color:var(--mute)}.st.ok{color:var(--ok)}.st.bad{color:var(--bad)}.st.warn{color:#9A4A00}
+.wrap{max-width:1400px;margin:0 auto;padding:20px;display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start}
+.side{position:sticky;top:84px;background:#fff;border:2px solid var(--ink);border-radius:18px;padding:10px}
+.side button{display:flex;width:100%;justify-content:space-between;align-items:center;gap:8px;min-height:44px;padding:8px 12px;border:0;background:transparent;border-radius:12px;font-weight:600;text-align:left;cursor:pointer}
+.side button:hover{background:var(--soft)}
+.side button[aria-current=true]{background:var(--blue);color:#fff}
+.side .n{font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--soft);color:var(--ink)}
+.side .n.ch{background:var(--orange)}
+.card{background:#fff;border:2px solid var(--ink);border-radius:18px;padding:18px;margin-bottom:20px}
+.card h2{font-size:20px;font-weight:800}
+.hint{color:var(--mute);margin:6px 0 14px;max-width:760px}
+.sel{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px}
+.lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.it{position:relative;border:2px solid var(--ink);border-radius:12px;overflow:hidden;background:#E3EAFF;aspect-ratio:4/5;padding:0;cursor:pointer;display:block;width:100%}
+.it img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.it .cap{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 5px;font-size:11px;font-weight:700;color:#fff;background:linear-gradient(transparent,rgba(14,19,48,.85));text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .ty{position:absolute;left:6px;top:6px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;background:#fff;border:1.5px solid var(--ink)}
+.lib .it.on{outline:4px solid var(--blue);outline-offset:-4px}
+.lib .it.on:after{content:"✓";position:absolute;right:6px;top:6px;width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;font-weight:700;display:grid;place-items:center;font-size:14px}
+.lib .it:hover img{transform:scale(1.04)}.it img{transition:transform .25s}
+.s{position:relative}
+.s .it{cursor:grab}
+.s.drag{opacity:.35}
+.s.over .it{outline:4px dashed var(--orange);outline-offset:-4px}
+.s .no{position:absolute;left:6px;top:6px;z-index:2;min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:var(--ink);color:#fff;font-weight:700;font-size:12px;display:grid;place-items:center}
+.s .ctl{display:flex;gap:4px;margin-top:6px}
+.s .ctl button{flex:1;min-height:36px;border:2px solid var(--ink);border-radius:10px;background:#fff;font-weight:700;cursor:pointer}
+.s .ctl button:hover:not(:disabled){background:var(--soft)}
+.s .ctl button.x{color:var(--bad)}
+.s .ctl button:disabled{opacity:.3;cursor:default}
+.fl{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.fl select,.fl input[type=search]{min-height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--ink);background:#fff}
+.fl input[type=search]{flex:1;min-width:180px}
+.empty{padding:28px;text-align:center;color:var(--mute);border:2px dashed var(--line);border-radius:12px}
+.more{margin-top:14px;text-align:center}
+dialog{border:2px solid var(--ink);border-radius:18px;padding:22px;max-width:520px;width:calc(100% - 32px)}
+dialog::backdrop{background:rgba(14,19,48,.55)}
+dialog h2{font-size:20px;margin-bottom:10px}
+dialog ol{padding-left:20px;margin:10px 0}
+dialog li{margin-bottom:6px}
+dialog input{width:100%;min-height:44px;padding:0 14px;border-radius:12px;border:2px solid var(--ink);margin:6px 0 4px}
+dialog .row{display:flex;gap:10px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+label{font-weight:700}
+.err{color:var(--bad);font-weight:600;min-height:22px}
+@media(max-width:860px){.wrap{grid-template-columns:1fr;padding:14px}.side{position:static;display:flex;gap:6px;overflow-x:auto}.side button{width:auto;white-space:nowrap;flex:none}.top h1{width:100%}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+  <h1>Dashboard <em>sản phẩm nổi bật</em></h1>
+  <span class="st" id="st" role="status" aria-live="polite"></span>
+  <a class="btn" href="index.html" target="_blank" rel="noopener">Mở trang chính</a>
+  <button class="btn" id="b-undo" type="button" disabled>Hoàn tác</button>
+  <button class="btn" id="b-gh" type="button">Kết nối GitHub</button>
+  <button class="btn p" id="b-save" type="button" disabled>Lưu lên trang</button>
+</div></header>
+
+<div class="wrap">
+  <nav class="side" id="side" aria-label="Các mục trên trang chính"></nav>
+  <main>
+    <section class="card" aria-labelledby="h-sel">
+      <h2 id="h-sel"></h2>
+      <p class="hint" id="hint"></p>
+      <div class="sel" id="sel"></div>
+    </section>
+    <section class="card" aria-labelledby="h-lib">
+      <h2 id="h-lib">Thư viện sản phẩm</h2>
+      <p class="hint">Bấm vào một sản phẩm để thêm vào mục đang chọn. Bấm lần nữa để gỡ.</p>
+      <div class="fl">
+        <select id="f-client" aria-label="Lọc theo khách hàng"></select>
+        <input id="f-q" type="search" placeholder="Tìm theo tên khách hàng hoặc tiêu đề" aria-label="Tìm sản phẩm">
+        <span class="st" id="f-n"></span>
+      </div>
+      <div class="lib" id="lib"></div>
+      <div class="more"><button class="btn" id="b-more" type="button" hidden>Xem thêm</button></div>
+    </section>
+  </main>
+</div>
+
+<dialog id="dlg" aria-labelledby="h-dlg">
+  <h2 id="h-dlg">Kết nối GitHub</h2>
+  <p>Để nút Lưu ghi được lên trang, bạn cần một mã truy cập GitHub. Mã chỉ lưu trong trình duyệt này.</p>
+  <ol>
+    <li>Đăng nhập GitHub bằng tài khoản <b>thanhdat-designer</b>, mở <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">trang tạo mã</a>.</li>
+    <li>Token name: <b>portfolio-dashboard</b>. Expiration: chọn 1 năm.</li>
+    <li>Repository access: <b>Only select repositories</b>, chọn <b>portfolio</b>.</li>
+    <li>Permissions &gt; Repository permissions &gt; <b>Contents: Read and write</b>.</li>
+    <li>Bấm Generate token, sao chép mã (bắt đầu bằng <b>github_pat_</b>) và dán vào ô dưới.</li>
+  </ol>
+  <label for="tok">Mã truy cập</label>
+  <input id="tok" type="password" autocomplete="off" spellcheck="false">
+  <p class="err" id="tok-err" role="alert"></p>
+  <div class="row">
+    <button class="btn" id="tok-del" type="button">Xóa mã khỏi trình duyệt</button>
+    <button class="btn" id="tok-x" type="button">Đóng</button>
+    <button class="btn b" id="tok-ok" type="button">Kiểm tra và lưu mã</button>
+  </div>
+</dialog>
+
+<script src="data/items.js"></script>
+<script>document.write('<script src="data/featured.js?t='+Date.now()+'"><\/script>')</script>
+<script>
+(function () {
+  const REPO = 'thanhdat-designer/portfolio', FILE = 'data/featured.js', API = 'https://api.github.com/repos/' + REPO;
+  const $ = s => document.querySelector(s);
+  const D = window.PF || { items: [], featured: {} };
+  const byId = {}; D.items.forEach(i => byId[i.id] = i);
+  const M = it => 'm/' + it.id;
+  const TY = { vid: 'Video', gif: 'GIF', img: 'Ảnh', lp: 'Landing' };
+  const SEC = [
+    { k: 'reel', t: 'Video kể chuyện', h: 'Hàng video drama và sing. Nên chọn 6 video (một hàng trên máy tính), tối đa 12.', ok: i => i.type === 'vid', min: 3, max: 12 },
+    { k: 'ads', t: 'Video sản phẩm', h: 'Hàng video quảng cáo sản phẩm. Nên chọn 6 video, tối đa 12.', ok: i => i.type === 'vid', min: 3, max: 12 },
+    { k: 'social', t: 'Social post Co.opmart', h: 'Nên chọn 8 bài (2 hàng). Ô hiển thị theo tỉ lệ 4:5, bài vuông hoặc ngang sẽ bị cắt bớt hai bên.', ok: i => i.brand === 'coopmart' && i.type === 'img', min: 4, max: 12 },
+    { k: 'social_oly', t: 'Social post Olympia', h: 'Nên chọn 8 bài (2 hàng). Ô hiển thị theo tỉ lệ 4:5.', ok: i => i.brand === 'olympia' && i.type === 'img', min: 4, max: 12 },
+    { k: 'gifs', t: 'GIF & motion', h: 'Nên chọn 8 GIF (2 hàng), tối đa 12.', ok: i => i.type === 'gif', min: 4, max: 12 },
+    { k: 'wall', t: 'Static ads', h: 'Kho ảnh xoay vòng ngẫu nhiên của mục Static ads. Càng nhiều ảnh càng đa dạng, tối thiểu 30.', ok: i => i.type === 'img', min: 30, max: 300 },
+    { k: 'm_orangify', t: 'Thẻ brand Orangify', h: '3 ảnh trên thẻ Orangify Digital và ở dòng Kinh nghiệm. Cần đúng 3.', ok: i => i.brand === 'orangify' && i.type !== 'lp', min: 3, max: 3 },
+    { k: 'm_coopmart', t: 'Thẻ brand Co.opmart', h: '3 ảnh trên thẻ Co.opmart và ở dòng Kinh nghiệm. Cần đúng 3.', ok: i => i.brand === 'coopmart', min: 3, max: 3 },
+    { k: 'm_olympia', t: 'Thẻ brand Olympia', h: '3 ảnh trên thẻ Olympia Travel và ở dòng Kinh nghiệm. Cần đúng 3.', ok: i => i.brand === 'olympia', min: 3, max: 3 }
+  ];
+  const clean = f => { const o = {}; SEC.forEach(s => { o[s.k] = (f[s.k] || []).filter(id => byId[id]); }); return o; };
+  const base = Object.assign({}, D.featured, window.PF_FEATURED || {});
+  let saved = clean(base), cur = clean(base), sec = SEC[0], shown = 120, dragId = null;
+  const same = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+  const dirty = () => SEC.some(s => !same(saved[s.k], cur[s.k]));
+  const problems = () => SEC.filter(s => cur[s.k].length < s.min || cur[s.k].length > s.max);
+  let tok = '';
+  try { tok = localStorage.getItem('pf-admin-token') || ''; } catch (e) {}
+
+  function status(msg, cls) { const el = $('#st'); el.textContent = msg; el.className = 'st ' + (cls || ''); }
+  function refreshTop() {
+    const d = dirty(), p = problems();
+    $('#b-undo').disabled = !d;
+    $('#b-save').disabled = !d || p.length > 0;
+    $('#b-gh').textContent = tok ? 'GitHub: đã kết nối' : 'Kết nối GitHub';
+    if (p.length) status('Mục "' + p[0].t + '" cần ' + (p[0].min === p[0].max ? 'đúng ' + p[0].min : 'từ ' + p[0].min + ' đến ' + p[0].max) + ' sản phẩm.', 'warn');
+    else if (d) status('Có thay đổi chưa lưu.', 'warn');
+    else status('Mọi thứ đã được lưu.', 'ok');
+  }
+  function label(it) { return (it.title || it.client) + ' · ' + TY[it.type]; }
+  function thumb(it, cap) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'it';
+    const im = new Image(); im.loading = 'lazy'; im.alt = ''; im.src = M(it) + '_t.webp';
+    const ty = document.createElement('span'); ty.className = 'ty'; ty.textContent = TY[it.type];
+    const c = document.createElement('span'); c.className = 'cap'; c.textContent = cap || it.client;
+    b.append(im, ty, c);
+    return b;
+  }
+  function drawSide() {
+    const el = $('#side'); el.textContent = '';
+    SEC.forEach(s => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-current', s === sec);
+      const n = document.createElement('span');
+      n.className = 'n' + (same(saved[s.k], cur[s.k]) ? '' : ' ch');
+      n.textContent = cur[s.k].length;
+      b.append(document.createTextNode(s.t), n);
+      b.onclick = () => { sec = s; shown = 120; $('#f-q').value = ''; drawAll(true); };
+      el.appendChild(b);
+    });
+  }
+  function move(i, j) {
+    const L = cur[sec.k];
+    if (j < 0 || j >= L.length) return;
+    L.splice(j, 0, L.splice(i, 1)[0]);
+    drawAll();
+  }
+  function drawSel() {
+    const L = cur[sec.k], el = $('#sel');
+    $('#h-sel').textContent = sec.t + ' (' + L.length + ')';
+    $('#hint').textContent = sec.h + ' Kéo thả hoặc dùng nút mũi tên để đổi thứ tự.';
+    el.textContent = '';
+    if (!L.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = 'Chưa có sản phẩm nào. Chọn từ thư viện bên dưới.'; el.appendChild(e); el.style.display = 'block'; return; }
+    el.style.display = '';
+    L.forEach((id, i) => {
+      const it = byId[id], w = document.createElement('div');
+      w.className = 's'; w.draggable = true;
+      const no = document.createElement('span'); no.className = 'no'; no.textContent = i + 1;
+      const t = thumb(it); t.tabIndex = -1; t.setAttribute('aria-hidden', 'true');
+      t.querySelector('.ty').remove();
+      const ctl = document.createElement('div'); ctl.className = 'ctl';
+      const mk = (txt, lab, fn, dis, cls) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = txt; b.setAttribute('aria-label', lab + ': ' + label(it)); b.disabled = !!dis; if (cls) b.className = cls; b.onclick = fn; return b; };
+      ctl.append(mk('←', 'Chuyển lên trước', () => move(i, i - 1), i === 0), mk('→', 'Chuyển ra sau', () => move(i, i + 1), i === L.length - 1), mk('✕', 'Gỡ khỏi mục', () => { L.splice(i, 1); drawAll(); }, false, 'x'));
+      w.append(no, t, ctl);
+      w.addEventListener('dragstart', e => { dragId = id; w.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', id); } catch (x) {} });
+      w.addEventListener('dragend', () => { dragId = null; w.classList.remove('drag'); });
+      w.addEventListener('dragover', e => { if (dragId && dragId !== id) { e.preventDefault(); w.classList.add('over'); } });
+      w.addEventListener('dragleave', () => w.classList.remove('over'));
+      w.addEventListener('drop', e => { e.preventDefault(); w.classList.remove('over'); const a = L.indexOf(dragId); if (a > -1) move(a, i); });
+      el.appendChild(w);
+    });
+  }
+  function pool() {
+    const q = $('#f-q').value.trim().toLowerCase(), c = $('#f-client').value;
+    return D.items.filter(i => sec.ok(i) && (!c || i.client === c) && (!q || (i.client + ' ' + (i.title || '')).toLowerCase().includes(q)));
+  }
+  function drawClients() {
+    const el = $('#f-client'), keep = el.value;
+    const cs = [...new Set(D.items.filter(sec.ok).map(i => i.client))].sort();
+    el.textContent = '';
+    el.add(new Option('Tất cả khách hàng', ''));
+    cs.forEach(c => el.add(new Option(c, c)));
+    el.value = cs.includes(keep) ? keep : '';
+    el.hidden = cs.length < 2;
+  }
+  function drawLib() {
+    const L = cur[sec.k], P = pool(), el = $('#lib');
+    el.textContent = '';
+    $('#f-n').textContent = P.length + ' sản phẩm phù hợp với mục này';
+    P.slice(0, shown).forEach(it => {
+      const b = thumb(it, it.title || it.client), on = L.includes(it.id);
+      if (on) b.classList.add('on');
+      b.setAttribute('aria-pressed', on);
+      b.setAttribute('aria-label', (on ? 'Gỡ: ' : 'Thêm: ') + label(it));
+      b.onclick = () => {
+        const k = L.indexOf(it.id);
+        if (k > -1) L.splice(k, 1);
+        else { if (L.length >= sec.max) { status('Mục "' + sec.t + '" chỉ chứa tối đa ' + sec.max + ' sản phẩm. Gỡ bớt trước khi thêm.', 'bad'); return; } L.push(it.id); }
+        drawAll();
+      };
+      el.appendChild(b);
+    });
+    if (!P.length) { const e = document.createElement('div'); e.className = 'empty'; e.style.gridColumn = '1/-1'; e.textContent = 'Không tìm thấy sản phẩm nào.'; el.appendChild(e); }
+    $('#b-more').hidden = P.length <= shown;
+  }
+  function drawAll(resetClients) { drawSide(); drawSel(); if (resetClients) drawClients(); drawLib(); refreshTop(); }
+
+  $('#f-q').addEventListener('input', () => { shown = 120; drawLib(); });
+  $('#f-client').addEventListener('change', () => { shown = 120; drawLib(); });
+  $('#b-more').onclick = () => { shown += 120; drawLib(); };
+  $('#b-undo').onclick = () => { cur = clean(saved); drawAll(); };
+
+  /* GitHub */
+  const dlg = $('#dlg');
+  const gh = (path, opt) => fetch(API + path, Object.assign({ headers: { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' } }, opt || {}));
+  $('#b-gh').onclick = () => { $('#tok').value = tok; $('#tok-err').textContent = ''; dlg.showModal(); };
+  $('#tok-x').onclick = () => dlg.close();
+  $('#tok-del').onclick = () => { tok = ''; try { localStorage.removeItem('pf-admin-token'); } catch (e) {} $('#tok').value = ''; $('#tok-err').textContent = 'Đã xóa mã khỏi trình duyệt này.'; refreshTop(); };
+  $('#tok-ok').onclick = async () => {
+    const v = $('#tok').value.trim(), err = $('#tok-err');
+    if (!v) { err.textContent = 'Bạn chưa dán mã.'; return; }
+    const old = tok; tok = v; err.textContent = 'Đang kiểm tra…';
+    try {
+      const r = await gh('');
+      if (r.status === 401) throw new Error('Mã không đúng hoặc đã hết hạn.');
+      if (r.status === 404 || r.status === 403) throw new Error('Mã này không có quyền với repo portfolio. Kiểm tra lại bước 3 và 4.');
+      if (!r.ok) throw new Error('GitHub trả về lỗi ' + r.status + '.');
+      const j = await r.json();
+      if (!j.permissions || !j.permissions.push) throw new Error('Mã chỉ có quyền đọc. Ở bước 4 cần chọn Contents: Read and write.');
+      try { localStorage.setItem('pf-admin-token', tok); } catch (e) {}
+      dlg.close(); refreshTop(); status('Đã kết nối GitHub.', 'ok');
+    } catch (e) { tok = old; err.textContent = e.message === 'Failed to fetch' ? 'Không kết nối được GitHub. Kiểm tra mạng rồi thử lại.' : e.message; }
+  };
+  const b64 = s => { const b = new TextEncoder().encode(s); let o = ''; b.forEach(c => o += String.fromCharCode(c)); return btoa(o); };
+  $('#b-save').onclick = async () => {
+    if (!tok) { $('#b-gh').click(); return; }
+    const btn = $('#b-save'); btn.disabled = true; status('Đang lưu lên GitHub…');
+    const body = '/* Edited with admin.html */\nwindow.PF_FEATURED=' + JSON.stringify(cur) + ';\n';
+    try {
+      let sha;
+      const g = await gh('/contents/' + FILE + '?ref=main&t=' + Date.now());
+      if (g.ok) sha = (await g.json()).sha;
+      else if (g.status === 401) throw new Error('Mã truy cập đã hết hạn. Bấm "GitHub: đã kết nối" để nhập mã mới.');
+      else if (g.status !== 404) throw new Error('GitHub trả về lỗi ' + g.status + ' khi đọc file.');
+      const p = await gh('/contents/' + FILE, { method: 'PUT', body: JSON.stringify({ message: 'Update featured works from dashboard', content: b64(body), branch: 'main', sha }) });
+      if (p.status === 409) throw new Error('File vừa bị thay đổi ở nơi khác. Tải lại trang này rồi chọn lại.');
+      if (p.status === 403 || p.status === 404) throw new Error('Mã không có quyền ghi vào repo portfolio.');
+      if (!p.ok) throw new Error('GitHub trả về lỗi ' + p.status + ' khi lưu.');
+      saved = clean(cur); drawAll();
+      status('Đã lưu. Trang chính sẽ cập nhật sau khoảng 1 đến 2 phút, bấm Ctrl+F5 để thấy.', 'ok');
+    } catch (e) {
+      refreshTop();
+      status(e.message === 'Failed to fetch' ? 'Không kết nối được GitHub. Thay đổi vẫn còn trên trang này, thử Lưu lại.' : e.message, 'bad');
+    }
+  };
+  window.__admin = { get cur() { return cur; }, dirty };
+  drawAll(true);
+})();
+</script>
+</body>
+</html>

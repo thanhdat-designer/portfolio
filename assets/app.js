@@ -2,6 +2,7 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const D = window.PF || { items: [], featured: {} };
+  if (window.PF_FEATURED) D.featured = Object.assign({}, D.featured, window.PF_FEATURED);
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const HOVER = matchMedia('(hover: hover)').matches;
 
