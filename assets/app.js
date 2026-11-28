@@ -346,6 +346,16 @@
       el.appendChild(s.b);
     });
   });
+  /* branding tiles: cycle that part's designs on hover */
+  $$('.rbx.b7 .rt').forEach(a => {
+    const s = $$('.sl', a); if (s.length < 2) return;
+    let i = 0, t = null;
+    const go = n => { s[i].classList.remove('on'); i = n % s.length; s[i].classList.add('on'); };
+    const start = () => { if (RM || t) return; go(i + 1); t = setInterval(() => go(i + 1), 1100); };
+    const stop = () => { clearInterval(t); t = null; go(0); };
+    a.addEventListener('mouseenter', start); a.addEventListener('mouseleave', stop);
+    a.addEventListener('focus', start); a.addEventListener('blur', stop);
+  });
   const gf = $('#gif-grid');
   if (gf) { const L = pick(D.featured.gifs); L.forEach(it => gf.appendChild(tile(it, L, 'v45'))); }
   $$('[data-mosaic]').forEach(el => {
