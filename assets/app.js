@@ -57,6 +57,7 @@
       const p = document.createElement('span');
       p.className = 'play'; p.setAttribute('aria-hidden', 'true');
       b.appendChild(p);
+      const wh = document.createElement('span'); wh.className = 'who'; wh.setAttribute('aria-hidden', 'true'); wh.textContent = it.client; b.appendChild(wh);
       if (HOVER && !RM) {
         let v;
         b.addEventListener('pointerenter', () => {
@@ -274,6 +275,77 @@
       });
     }
   }
+  /* product stacks */
+  const RB = it => { const r = it.w / it.h; return r > 0.9 ? ['1:1', 1] : r > 0.7 ? ['4:5', 0.8] : ['9:16', 0.5625]; };
+  function mkStack(list, onClick) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'stack';
+    const top = list.slice(0, 5), fa = RB(list[0])[1];
+    const fan = document.createElement('span'); fan.className = 'fan'; fan.style.setProperty('--fa', fa);
+    top.reverse().forEach(it => { const im = new Image(); im.loading = 'lazy'; im.decoding = 'async'; im.alt = ''; im.src = M(it) + '_t.webp'; fan.appendChild(im); });
+    const h = document.createElement('span'); h.className = 'stack-n';
+    const c = document.createElement('span'); c.className = 'stack-c';
+    b.append(fan, h, c);
+    b.addEventListener('click', onClick);
+    return { b, h, c };
+  }
+  const SET = (function () {
+    let d, body, ttl, cnt, cur = null;
+    function build() {
+      d = document.createElement('dialog');
+      d.className = 'set';
+      d.innerHTML = '<div class="set-top"><div><h2 class="set-t"></h2><p class="set-c"></p></div><button class="lb-b set-x" type="button">✕</button></div><div class="set-body"></div>';
+      document.body.appendChild(d);
+      body = $('.set-body', d); ttl = $('.set-t', d); cnt = $('.set-c', d);
+      $('.set-x', d).onclick = () => d.close();
+      d.addEventListener('click', e => { if (e.target === d) d.close(); });
+      d.addEventListener('close', () => { body.innerHTML = ''; cur = null; });
+      document.addEventListener('langchange', () => { if (cur) fill(); });
+    }
+    function fill() {
+      const vi = lang === 'vi';
+      $('.set-x', d).setAttribute('aria-label', vi ? 'Đóng' : 'Close');
+      ttl.textContent = cur.name;
+      body.innerHTML = '';
+      const a0 = (D.about || {})[cur.name], ab = a0 ? a0[vi ? 1 : 0] + ' · ' : '';
+      const w = document.createElement('div');
+      if (cur.groups.length > 1) {
+        cnt.textContent = ab + cur.groups.length + (vi ? ' bộ · ' : ' sets · ') + cur.list.length + (vi ? ' ảnh quảng cáo' : ' ad images');
+        w.className = 'stacks in';
+        cur.groups.forEach((g, i) => {
+          const s = mkStack(g.list, () => LB.open(g.list, 0));
+          s.h.textContent = g.tag || ((vi ? 'Bộ ' : 'Set ') + String(i + 1).padStart(2, '0'));
+          s.c.textContent = g.ratio + ' · ' + g.list.length + (vi ? ' ảnh' : ' ads');
+          s.b.setAttribute('aria-label', (vi ? 'Xem ' : 'View ') + s.h.textContent + ', ' + s.c.textContent);
+          w.appendChild(s.b);
+        });
+      } else {
+        cnt.textContent = ab + cur.list.length + (vi ? ' ảnh quảng cáo' : ' ad images');
+        w.className = 'grid';
+        cur.list.forEach(it => w.appendChild(tile(it, cur.list)));
+      }
+      body.appendChild(w);
+    }
+    return { open(name, list, groups) { if (!d) build(); cur = { name, list, groups }; fill(); d.showModal(); body.scrollTop = 0; } };
+  })();
+  $$('.stacks').forEach(el => {
+    const brand = el.dataset.brand, max = +el.dataset.max || 99;
+    const pref = (D.featured.wall || []);
+    const rank = id => { const k = pref.indexOf(id); return k < 0 ? 1e6 : k; };
+    const by = {};
+    D.items.filter(x => x.brand === brand && x.type === 'img').forEach(x => (by[x.client] = by[x.client] || []).push(x));
+    Object.keys(by).sort((a, b) => by[b].length - by[a].length).slice(0, max).forEach(name => {
+      const list = by[name].slice().sort((a, b) => rank(a.id) - rank(b.id));
+      const gm = {};
+      list.forEach(it => { const k = (it.g || '') + '|' + RB(it)[0]; (gm[k] = gm[k] || { key: k, ratio: RB(it)[0], tag: (D.sets || {})[k] || (D.sets || {})[it.g || ''], list: [] }).list.push(it); });
+      const groups = Object.values(gm).sort((a, b) => a.key < b.key ? -1 : 1);
+      const s = mkStack(list, () => SET.open(name, list, groups));
+      s.h.textContent = name;
+      const lab = () => { const vi = lang === 'vi'; s.c.textContent = (groups.length > 1 ? groups.length + (vi ? ' bộ · ' : ' sets · ') : '') + list.length + (vi ? ' ảnh' : ' ads'); s.b.setAttribute('aria-label', (vi ? 'Mở bộ ảnh: ' : 'Open set: ') + name + ', ' + s.c.textContent); };
+      lab(); document.addEventListener('langchange', lab);
+      el.appendChild(s.b);
+    });
+  });
   const gf = $('#gif-grid');
   if (gf) { const L = pick(D.featured.gifs); L.forEach(it => gf.appendChild(tile(it, L, 'v45'))); }
   $$('[data-mosaic]').forEach(el => {
